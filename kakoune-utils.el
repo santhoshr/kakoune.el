@@ -39,25 +39,59 @@ Deactivate the mark unless mark-region-mode is active."
   (interactive "p")
   (forward-same-syntax (- count)))
 
-(defun kakoune-forward-word-end (count)
-  "Move forward to the end of the COUNT-th word."
+(defun kakoune-backward-word (count)
+  "Move backward to the beginning of the COUNT-th word.
+This is similar to Vim's 'b' command, positioning at the start of words."
   (interactive "p")
   (dotimes (_ count)
-    (let ((start-point (point)))
-      ;; Move forward one char if we're at the end of a word
-      (when (and (looking-at "\\sw")
-                 (not (eobp))
-                 (save-excursion (forward-char) (not (looking-at "\\sw"))))
-        (forward-char))
-      ;; Skip non-word characters
+    (cond
+     ;; If we're at the beginning of a word, move to previous word
+     ((and (looking-at "\\sw")
+           (save-excursion (backward-char) (not (looking-at "\\sw"))))
+      (skip-syntax-backward "^w")
+      (skip-syntax-backward "w"))
+     ;; If we're in the middle of a word, go to its beginning
+     ((looking-at "\\sw")
+      (skip-syntax-backward "w"))
+     ;; If we're not in a word, find the previous word
+     (t
+      (skip-syntax-backward "^w")
+      (skip-syntax-backward "w")))))
+
+(defun kakoune-forward-word (count)
+  "Move forward to the beginning of the COUNT-th word.
+This is similar to Vim's 'w' command, positioning at word starts."
+  (interactive "p")
+  (dotimes (_ count)
+    (cond
+     ;; If we're in a word, skip to end then find next word
+     ((looking-at "\\sw")
+      (skip-syntax-forward "w")
+      (skip-syntax-forward "^w"))
+     ;; If we're not in a word, find the next word
+     (t
+      (skip-syntax-forward "^w")))))
+
+(defun kakoune-forward-word-end (count)
+  "Move forward to the end of the COUNT-th word.
+In Emacs, this positions the cursor after the last character of the word,
+which visually appears to be on the last character."
+  (interactive "p")
+  (dotimes (_ count)
+    (cond
+     ;; If we're in the middle of a word, go to its end
+     ((and (looking-at "\\sw")
+           (save-excursion (forward-char) (looking-at "\\sw")))
+      (skip-syntax-forward "w"))
+     ;; If we're at the end of a word, move to the next word's end
+     ((and (looking-at "\\sw")
+           (save-excursion (forward-char) (not (looking-at "\\sw"))))
       (skip-syntax-forward "^w")
-      ;; Move to end of word
-      (when (looking-at "\\sw")
-        (skip-syntax-forward "w")
-        (unless (bobp) (backward-char)))
-      ;; Ensure we moved forward
-      (when (<= (point) start-point)
-        (forward-char)))))
+      (skip-syntax-forward "w"))
+     ;; If we're not in a word, find the next word and go to its end
+     (t
+      (skip-syntax-forward "^w")
+      (skip-syntax-forward "w")))))
 
 (defvar kakoune-last-t-or-f ?f
   "Using t or f command sets this variable.")
