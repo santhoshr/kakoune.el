@@ -53,6 +53,8 @@
    ("C" kill-line :exit t)
    ("d" kakoune-d)
    ("D" kill-line)
+   ("e" kakoune-forward-word-end :first '(kakoune-set-mark-here))
+   ("E" kakoune-forward-word-end :first '(kakoune-set-mark-if-inactive))
    ("f" kakoune-select-to-char :first '(kakoune-set-mark-here))
    ("F" kakoune-select-to-char :first '(kakoune-set-mark-if-inactive))
    ("g" (("h" beginning-of-line)

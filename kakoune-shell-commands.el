@@ -1,3 +1,12 @@
+;;; kakoune-shell-commands.el --- Shell command integration for kakoune.el -*- lexical-binding: t; -*-
+
+;; Author: Joseph Morag <jm4157@columbia.edu>
+;;; Commentary:
+;; Provides shell command functionality for kakoune.el
+
+;;; Code:
+(require 'multiple-cursors)
+
 (defun kakoune-shell-pipe ()
   "Run a shell command on each of the current regions separately and replace the current regions with its output."
   (interactive)

@@ -19,7 +19,8 @@
        (unless (use-region-p) (set-mark (point))))
 
 (defun kakoune-set-mark-here () "Set the mark at the location of the point."
-       (interactive) (set-mark (point)))
+       (interactive) 
+       (set-mark (point)))
 
 (defun kakoune-deactivate-mark ()
   "Deactivate the mark.
@@ -37,6 +38,26 @@ Deactivate the mark unless mark-region-mode is active."
   "Move backward COUNT times by same syntax blocks."
   (interactive "p")
   (forward-same-syntax (- count)))
+
+(defun kakoune-forward-word-end (count)
+  "Move forward to the end of the COUNT-th word."
+  (interactive "p")
+  (dotimes (_ count)
+    (let ((start-point (point)))
+      ;; Move forward one char if we're at the end of a word
+      (when (and (looking-at "\\sw")
+                 (not (eobp))
+                 (save-excursion (forward-char) (not (looking-at "\\sw"))))
+        (forward-char))
+      ;; Skip non-word characters
+      (skip-syntax-forward "^w")
+      ;; Move to end of word
+      (when (looking-at "\\sw")
+        (skip-syntax-forward "w")
+        (unless (bobp) (backward-char)))
+      ;; Ensure we moved forward
+      (when (<= (point) start-point)
+        (forward-char)))))
 
 (defvar kakoune-last-t-or-f ?f
   "Using t or f command sets this variable.")
